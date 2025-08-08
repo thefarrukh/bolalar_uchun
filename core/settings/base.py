@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+BASE_DIR = Path(__file__).resolve().parent.parent
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALLOWED_HOSTS = ["*"]
 
 
@@ -20,12 +20,16 @@ DJANGO_APPS = [
 ]
 
 LOCAL_APPS = [
-    "apps.common"
+    "apps.common",
+    "apps.users",
+    "apps.news",
+    "apps.courses",
+    "apps.payments",
 ]
 
-EXTERNAL_APPS = []
+EXTERNAL_APPS = ["daphne", "jazzmin", "rest_framework", "drf_yasg"]
 
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + EXTERNAL_APPS
+INSTALLED_APPS = LOCAL_APPS + EXTERNAL_APPS + DJANGO_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -54,8 +58,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "core.wsgi.application"
-# ASGI_APPLICATION = 'core.asgi.application'
+# WSGI_APPLICATION = "core.wsgi.application"
+ASGI_APPLICATION = "core.asgi.application"
 
 
 DATABASES = {
@@ -69,6 +73,8 @@ DATABASES = {
         "ATOMIC_REQUESTS": True,
     }
 }
+
+AUTH_USER_MODEL = "users.User"
 
 
 # Password validation
@@ -149,3 +155,5 @@ AES_KEY = os.getenv("AES_KEY", "")
 # RECAPTCHA
 RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
+
+from core.jazzmin_conf import JAZZMIN_SETTINGS # noqa
