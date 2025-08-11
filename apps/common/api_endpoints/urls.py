@@ -1,9 +1,15 @@
-from rest_framework.routers import DefaultRouter
+from django.urls import path
+from .views import (
+    VersionHistoryListCreateView,
+    VersionHistoryDetailView,
+    FrontendTranslationListCreateView,
+    FrontendTranslationDetailView,
+)
 
-from .views import FrontendTranslationViewSet, VersionHistoryViewSet
+urlpatterns = [
+    path('version-history/', VersionHistoryListCreateView.as_view(), name='versionhistory-list'),
+    path('version-history/<int:pk>/', VersionHistoryDetailView.as_view(), name='versionhistory-detail'),
 
-router = DefaultRouter()
-router.register(r'version-histories', VersionHistoryViewSet, basename='versionhistory')
-router.register(r'frontend-translations', FrontendTranslationViewSet, basename='frontendtranslation')
-
-urlpatterns = router.urls
+    path('frontend-translation/', FrontendTranslationListCreateView.as_view(), name='frontendtranslation-list'),
+    path('frontend-translation/<int:pk>/', FrontendTranslationDetailView.as_view(), name='frontendtranslation-detail'),
+]

@@ -1,22 +1,35 @@
-# courses/api_endpoints/urls.py
-
-from rest_framework.routers import DefaultRouter
-
+from django.urls import path
 from .views import (
-    CategoryViewSet,
-    CommentViewSet,
-    CourseViewSet,
-    LessonViewSet,
-    ModuleViewSet,
-    WebinarViewSet,
+    CourseListCreateView, CourseDetailView,
+    WebinarListCreateView, WebinarDetailView,
+    CategoryListCreateView, CategoryDetailView,
+    ModuleListCreateView, ModuleDetailView,
+    LessonListCreateView, LessonDetailView,
+    CommentListCreateView, CommentDetailView,
 )
 
-router = DefaultRouter()
-router.register(r"courses", CourseViewSet, basename="course")
-router.register(r"webinars", WebinarViewSet, basename="webinar")
-router.register(r"categories", CategoryViewSet, basename="category")
-router.register(r"modules", ModuleViewSet, basename="module")
-router.register(r"lessons", LessonViewSet, basename="lesson")
-router.register(r"comments", CommentViewSet, basename="comment")
+urlpatterns = [
+    # Courses
+    path('courses/', CourseListCreateView.as_view(), name='course-list'),
+    path('courses/<int:pk>/', CourseDetailView.as_view(), name='course-detail'),
 
-urlpatterns = router.urls
+    # Webinars
+    path('webinars/', WebinarListCreateView.as_view(), name='webinar-list'),
+    path('webinars/<int:pk>/', WebinarDetailView.as_view(), name='webinar-detail'),
+
+    # Categories
+    path('categories/', CategoryListCreateView.as_view(), name='category-list'),
+    path('categories/<int:pk>/', CategoryDetailView.as_view(), name='category-detail'),
+
+    # Modules
+    path('modules/', ModuleListCreateView.as_view(), name='module-list'),
+    path('modules/<int:pk>/', ModuleDetailView.as_view(), name='module-detail'),
+
+    # Lessons
+    path('lessons/', LessonListCreateView.as_view(), name='lesson-list'),
+    path('lessons/<int:pk>/', LessonDetailView.as_view(), name='lesson-detail'),
+
+    # Comments
+    path('comments/', CommentListCreateView.as_view(), name='comment-list'),
+    path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
+]

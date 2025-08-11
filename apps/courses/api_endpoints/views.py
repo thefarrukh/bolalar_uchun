@@ -1,9 +1,5 @@
-# courses/api_endpoints/views.py
-
-from rest_framework import viewsets
-
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from apps.courses.models import Category, Comment, Course, Lesson, Module, Webinar
-
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -13,32 +9,61 @@ from .serializers import (
     WebinarSerializer,
 )
 
+# Course
+class CourseListCreateView(ListCreateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
 
-class CourseViewSet(viewsets.ModelViewSet):
+class CourseDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
 
-class WebinarViewSet(viewsets.ModelViewSet):
+# Webinar
+class WebinarListCreateView(ListCreateAPIView):
+    queryset = Webinar.objects.all()
+    serializer_class = WebinarSerializer
+
+class WebinarDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Webinar.objects.all()
     serializer_class = WebinarSerializer
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+# Category
+class CategoryListCreateView(ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class CategoryDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class ModuleViewSet(viewsets.ModelViewSet):
+# Module
+class ModuleListCreateView(ListCreateAPIView):
+    queryset = Module.objects.all()
+    serializer_class = ModuleSerializer
+
+class ModuleDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Module.objects.all()
     serializer_class = ModuleSerializer
 
 
-class LessonViewSet(viewsets.ModelViewSet):
+# Lesson
+class LessonListCreateView(ListCreateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+
+class LessonDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+# Comment
+class CommentListCreateView(ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+class CommentDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer

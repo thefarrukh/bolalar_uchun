@@ -1,9 +1,5 @@
-# apps/news/api_endpoints/views.py
-
-from rest_framework import viewsets
-
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from apps.news.models import Event, Post, Question, QuestionOption, Submission, Survey
-
 from .serializers import (
     EventSerializer,
     PostSerializer,
@@ -13,32 +9,61 @@ from .serializers import (
     SurveySerializer,
 )
 
+# Post
+class PostListCreateView(ListCreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
 
-class PostViewSet(viewsets.ModelViewSet):
+class PostDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
 
-class EventViewSet(viewsets.ModelViewSet):
+# Event
+class EventListCreateView(ListCreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+
+class EventDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
 
-class SurveyViewSet(viewsets.ModelViewSet):
+# Survey
+class SurveyListCreateView(ListCreateAPIView):
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+
+class SurveyDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Survey.objects.all()
     serializer_class = SurveySerializer
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
+# Question
+class QuestionListCreateView(ListCreateAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+class QuestionDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
 
-class QuestionOptionViewSet(viewsets.ModelViewSet):
+# Question Option
+class QuestionOptionListCreateView(ListCreateAPIView):
+    queryset = QuestionOption.objects.all()
+    serializer_class = QuestionOptionSerializer
+
+class QuestionOptionDetailView(RetrieveUpdateDestroyAPIView):
     queryset = QuestionOption.objects.all()
     serializer_class = QuestionOptionSerializer
 
 
-class SubmissionViewSet(viewsets.ModelViewSet):
+# Submission
+class SubmissionListCreateView(ListCreateAPIView):
+    queryset = Submission.objects.all()
+    serializer_class = SubmissionSerializer
+
+class SubmissionDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer

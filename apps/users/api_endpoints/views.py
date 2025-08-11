@@ -1,9 +1,5 @@
-# apps/users/api_endpoints/views.py
-
-from rest_framework import viewsets
-
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from apps.users.models import Interest, User, UserCourse, UserWebinar
-
 from .serializers import (
     InterestSerializer,
     UserCourseSerializer,
@@ -11,22 +7,41 @@ from .serializers import (
     UserWebinarSerializer,
 )
 
+# User
+class UserListCreateView(ListCreateAPIView):
+    queryset = User.objects.filter(is_deleted=False)
+    serializer_class = UserSerializer
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserDetailView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.filter(is_deleted=False)
     serializer_class = UserSerializer
 
 
-class InterestViewSet(viewsets.ModelViewSet):
+# Interest
+class InterestListCreateView(ListCreateAPIView):
+    queryset = Interest.objects.all()
+    serializer_class = InterestSerializer
+
+class InterestDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Interest.objects.all()
     serializer_class = InterestSerializer
 
 
-class UserCourseViewSet(viewsets.ModelViewSet):
+# UserCourse
+class UserCourseListCreateView(ListCreateAPIView):
+    queryset = UserCourse.objects.all()
+    serializer_class = UserCourseSerializer
+
+class UserCourseDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserCourse.objects.all()
     serializer_class = UserCourseSerializer
 
 
-class UserWebinarViewSet(viewsets.ModelViewSet):
+# UserWebinar
+class UserWebinarListCreateView(ListCreateAPIView):
+    queryset = UserWebinar.objects.all()
+    serializer_class = UserWebinarSerializer
+
+class UserWebinarDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserWebinar.objects.all()
     serializer_class = UserWebinarSerializer
