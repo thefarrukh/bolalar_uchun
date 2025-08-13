@@ -1,44 +1,35 @@
 from apps.payments.models import ProviderCredentials, Providers
 
-
-def get_credentials() -> tuple[str | None, str | None, str | None, str | None]:
+def get_credentials() -> dict[str, str | None]:
     """
-    Get Paylov API credentials.
-
-    This function retrieves the Paylov API credentials (API key, username, password, subscription key)
-    from the database.
-
-    Returns:
-        Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]: A tuple containing Paylov API credentials.
-            - PAYLOV_API_KEY: The API key for Paylov.
-            - PAYLOV_USERNAME: The username for Paylov.
-            - PAYLOV_PASSWORD: The password for Paylov.
-            - PAYLOV_SUBSCRIPTION_KEY: The subscription key for Paylov.
+    Get Paylov API credentials from the database and return as a dictionary.
     """
-
     paylov_provider = Providers.objects.filter(key="paylov").last()
+    if not paylov_provider:
+        raise ValueError("Paylov provider not found in database")
+
     paylov_creds = ProviderCredentials.objects.filter(provider=paylov_provider).all()
+    print(paylov_creds)
 
-    paylov_api_key = getattr(
-        paylov_creds.filter(key="PAYLOV_API_KEY").last(), "value", None
-    )
-    paylov_username = getattr(
-        paylov_creds.filter(key="PAYLOV_USERNAME").last(), "value", None
-    )
-    paylov_password = getattr(
-        paylov_creds.filter(key="PAYLOV_PASSWORD").last(), "value", None
-    )
-    paylov_subscription_key = getattr(
-        paylov_creds.filter(key="PAYLOV_SUBSCRIPTION_KEY").last(), "value", None
-    )
-    paylov_redirect_url = getattr(
-        paylov_creds.filter(key="PAYLOV_REDIRECT_URL").last(), "value", None
-    )
-
-    return {
-        "PAYLOV_API_KEY": paylov_api_key,
-        "PAYLOV_USERNAME": paylov_username,
-        "PAYLOV_PASSWORD": paylov_password,
-        "PAYLOV_SUBSCRIPTION_KEY": paylov_subscription_key,
-        "PAYLOV_REDIRECT_URL": paylov_redirect_url,
+    credentials = {
+        "PAYLOV_API_KEY": getattr(
+            paylov_creds.filter(key="PAYLOV_API_KEY").last(), "value", None
+        ),
+        "PAYLOV_USERNAME": getattr(
+            paylov_creds.filter(key="PAYLOV_USERNAME").last(), "value", None
+        ),
+        "PAYLOV_PASSWORD": getattr(
+            paylov_creds.filter(key="PAYLOV_PASSWORD").last(), "value", None
+        ),
+        "PAYLOV_SUBSCRIPTION_KEY": getattr(
+            paylov_creds.filter(key="PAYLOV_SUBSCRIPTION_KEY").last(), "value", None
+        ),
+        "PAYLOV_REDIRECT_URL": getattr(
+            paylov_creds.filter(key="PAYLOV_REDIRECT_URL").last(), "value", None
+        ),
     }
+
+    if not credentials["PAYLOV_REDIRECT_URL"] or not credentials["PAYLOV_API_KEY"]:
+        raise ValueError("PAYLOV_REDIRECT_URL or PAYLOV_API_KEY is missing!")
+
+    return credentials

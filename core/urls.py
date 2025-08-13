@@ -14,16 +14,16 @@ urlpatterns = [
 
     # Common app
     path("api/v1/common/", include("apps.common.urls", namespace="common")),
-    path("api/common/", include("apps.common.api_endpoints.urls")),  # endi router emas, path list bo‘ladi
+    # path("api/common/", include("apps.common.api_endpoints.urls")),  # endi router emas, path list bo‘ladi
 
     # Courses app
-    path("api/courses/", include("apps.courses.api_endpoints.urls")),
+    # path("api/courses/", include("apps.courses.api_endpoints.urls")),
 
     # News app
-    path("api/news/", include("apps.news.api_endpoints.urls")),
+    # path("api/news/", include("apps.news.api_endpoints.urls")),
 
     # Users app
-    path("api/users/", include("apps.users.api_endpoints.urls")),
+    # path("api/users/", include("apps.users.api_endpoints.urls")),
 
     # Payments app
     path("api/payments/", include("apps.payments.urls", namespace="payments")),

@@ -31,6 +31,10 @@ class OrderCreateSerializer(serializers.Serializer):
         if not product:
             raise serializers.ValidationError("Product not found")
 
+        provider = Providers.objects.filter(key="paylov").last()
+        if not provider:
+            raise serializers.ValidationError("Payment provider not found.")
+
         with transaction.atomic():
             order = Order.objects.create(
                 user=user,
@@ -39,7 +43,6 @@ class OrderCreateSerializer(serializers.Serializer):
                 amount=product.price,
             )
 
-            provider = Providers.objects.filter(key="paylov").last()
             transaction_obj = Transaction.objects.create(
                 order=order,
                 provider=provider,
@@ -56,5 +59,5 @@ class OrderCreateSerializer(serializers.Serializer):
         return {
             "id": instance.id,
             "amount": instance.amount,
-            "payment_url": instance._transaction.get_payment_url,
+            "payment_url": instance._transaction.get_payment_url if instance._transaction else None,
         }

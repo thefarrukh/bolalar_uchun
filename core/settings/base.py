@@ -157,3 +157,19 @@ RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
 
 from core.jazzmin_conf import JAZZMIN_SETTINGS # noqa
+
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT Authorization header. Example: "Bearer {token}"'
+        }
+    }
+}
+
+import os
+
+PAYLOV_REDIRECT_URL = os.getenv("PAYLOV_REDIRECT_URL")

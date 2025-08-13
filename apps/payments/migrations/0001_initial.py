@@ -60,6 +60,7 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(decimal_places=2, max_digits=12, verbose_name='Amount')),
                 ('extra', models.JSONField(blank=True, null=True, verbose_name='Extra Data')),
                 ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='payments.order', verbose_name='order')),
+
                 ('provider', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='payments.providers', verbose_name='Provider')),
             ],
             options={
