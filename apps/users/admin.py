@@ -32,7 +32,6 @@ class UserAdmin(BaseUserAdmin):
     ordering = ("phone_number",)
     actions: ClassVar[list] = [deactivate_users]  # 🛠️ Fix qilingan
 
-
     fieldsets = (
         (None, {"fields": ("phone_number", "username", "password")}),
         (

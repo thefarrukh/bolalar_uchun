@@ -1,13 +1,10 @@
-from rest_framework import serializers
 from django.db import transaction
+from rest_framework import serializers
 
-from apps.payments.models import Order, Transaction, Providers
-from apps.payments.choices import TransactionStatus
-
-from apps.payments.models import Order, Transaction
-from apps.courses.models import Course, Webinar
 from apps.courses.choices import ProductTypeChoices
-from apps.payments.paylov.client import PaylovClient
+from apps.courses.models import Course, Webinar
+from apps.payments.choices import TransactionStatus
+from apps.payments.models import Order, Providers, Transaction
 
 
 class OrderCreateSerializer(serializers.Serializer):
@@ -59,5 +56,7 @@ class OrderCreateSerializer(serializers.Serializer):
         return {
             "id": instance.id,
             "amount": instance.amount,
-            "payment_url": instance._transaction.get_payment_url if instance._transaction else None,
+            "payment_url": instance._transaction.get_payment_url
+            if instance._transaction
+            else None,
         }

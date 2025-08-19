@@ -109,9 +109,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = (BASE_DIR / "static",)
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -156,20 +158,18 @@ AES_KEY = os.getenv("AES_KEY", "")
 RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
 
-from core.jazzmin_conf import JAZZMIN_SETTINGS # noqa
+from core.jazzmin_conf import JAZZMIN_SETTINGS  # noqa
 
 
 SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
-            'description': 'JWT Authorization header. Example: "Bearer {token}"'
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": 'JWT Authorization header. Example: "Bearer {token}"',
         }
     }
 }
-
-import os
 
 PAYLOV_REDIRECT_URL = os.getenv("PAYLOV_REDIRECT_URL")

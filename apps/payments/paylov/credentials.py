@@ -1,5 +1,6 @@
 from apps.payments.models import ProviderCredentials, Providers
 
+
 def get_credentials() -> dict[str, str | None]:
     """
     Get Paylov API credentials from the database and return as a dictionary.

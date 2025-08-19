@@ -1,4 +1,5 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+
 from apps.common.api_endpoints.serializers import (
     FrontendTranslationSerializer,
     VersionHistorySerializer,
