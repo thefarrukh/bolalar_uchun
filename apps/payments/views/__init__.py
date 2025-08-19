@@ -1,4 +1,5 @@
 from .add_card import AddUserCardAPIView
+from .card_pay import UserCardReceiptConfirmAPIView, UserCardReceiptCreateAPIView
 from .confirm_card import ConfirmUserCardAPIView
 from .create_order import OrderCreateAPIView
 from .delete_user_card import DeleteUserCardAPIView
@@ -12,4 +13,6 @@ __all__ = [
     "GetSingleUserCardAPIView",
     "ListUserCardAPIView",
     "OrderCreateAPIView",
+    "UserCardReceiptConfirmAPIView",
+    "UserCardReceiptCreateAPIView",
 ]

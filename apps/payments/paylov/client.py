@@ -2,10 +2,13 @@ import base64
 import urllib
 
 import requests
-from rest_framework.exceptions import NotFound
+from django.db import transaction as db_transaction
+from rest_framework.exceptions import APIException, NotFound
 
-from apps.payments.choices import TransactionStatus
-from apps.payments.models import Providers, Transaction, UserCard
+from apps.courses.choices import ProductTypeChoices
+from apps.courses.models import Course, Webinar
+from apps.payments.choices import ProviderChoices, TransactionStatus
+from apps.payments.models import Order, Providers, Transaction, UserCard
 from apps.payments.paylov.constants import (
     API_ENDPOINTS,
     CHECKOUT_BASE_URL,
@@ -41,10 +44,11 @@ class PaylovClient:
         # Provider attrs
         self.merchant_headers = {"api-key": self.MERCHANT_KEY}
         self.subscription_headers = {"api-key": self.SUBSCRIPTION_KEY}
-        # self.params = params
+        self.params = params
         self.error = False
         self.code = STATUS_CODES["SUCCESS"]
-        # self.transaction = self.get_transaction()
+        self.transaction = self.get_transaction()
+        self.provider = Providers.objects.filter(key="paylov").last()
 
     """
         Merchant API code
@@ -142,7 +146,6 @@ class PaylovClient:
             otp_sent_phone = response_data["result"]["otpSentPhone"]
             card_id = response_data["result"]["cid"]
 
-            paylov_provider = Providers.objects.filter(key="paylov").last()
             is_already_exists = UserCard.objects.filter(
                 user=user, card_token=card_id
             ).exists()
@@ -153,7 +156,7 @@ class PaylovClient:
             user_card = UserCard.objects.create(
                 user=user,
                 card_token=card_id,
-                provider=paylov_provider,
+                provider=self.provider,
                 expire_month=expire_month,
                 expire_year=expire_year,
                 is_confirmed=False,
@@ -238,109 +241,121 @@ class PaylovClient:
         error_code = response_data.get("error", {"code": "unknown_error"})["code"]
         return self.get_error_response(error_code)
 
-    # def create_receipt(self, user: User, card_id: int, amount: int, meditation_id: int = None, event_id: int = None) -> \
-    #         tuple[bool, dict]:
-    #     try:
-    #         user_card = UserCard.objects.get(pk=card_id)
-    #     except UserCard.DoesNotExist:
-    #         return self.get_error_response("card_not_found")
+    def create_receipt(
+        self,
+        user: User,
+        card_token: str,
+        product_id: int,
+        product_type: str,
+    ) -> tuple[bool, dict]:
+        try:
+            user_card = UserCard.objects.get(user=user, card_token=card_token)
+        except UserCard.DoesNotExist:
+            return self.get_error_response("card_not_found")
 
-    #     if not user_card.confirmed:
-    #         return self.get_error_response("card_is_not_activated")
+        if not user_card.is_confirmed:
+            return self.get_error_response("card_is_not_activated")
 
-    #     meditation = Meditation.objects.filter(id=meditation_id).first() if meditation_id else None
-    #     event = Event.objects.filter(id=event_id).first() if event_id else None
+        with db_transaction.atomic():
+            if product_type == ProductTypeChoices.COURSE:
+                course = Course.objects.filter(id=product_id).first()
 
-    #     if meditation_id and not meditation:
-    #         raise NotFound("Meditation not found")
-    #     if event_id and not event:
-    #         raise NotFound("Event not found")
+                order = Order.objects.create(
+                    user=user, amount=course.price, course=course, is_paid=False
+                )
+            elif product_type == ProductTypeChoices.WEBINAR:
+                webinar = Webinar.objects.filter(id=product_id).first()
+                order = Order.objects.create(
+                    user=user, amount=webinar.price, webinar=webinar, is_paid=False
+                )
+            else:
+                raise APIException("Invalid product type")
 
-    #     if not (meditation or event):
-    #         raise NotFound("Either Meditation or Event must be provided")
+            transaction = Transaction.objects.create(
+                order=order,
+                provider=self.provider,
+                amount=order.amount,
+                status=TransactionStatus.PENDING,
+            )
 
-    #     provider = Providers.objects.filter(provider=Providers.ProviderChoices.PAYLOV, is_active=True).first()
-    #     if not provider:
-    #         raise APIException("Paylov provider not configured")
+        payload = {
+            "userId": str(user.id),
+            "amount": int(order.amount),
+            "account": {
+                "order_id": transaction.order.id,
+                "card_token": card_token,
+                "product_type": product_type,
+                "product_id": product_id,
+            },
+        }
 
-    #     order = Order.objects.create(
-    #         user=user,
-    #         meditation=meditation,
-    #         event=event,
-    #         amount=amount,
-    #         is_paid=False
-    #     )
+        success, response_data = self.send_request("CREATE_RECEIPT", payload=payload)
 
-    #     transaction = Transaction.objects.create(
-    #         order=order,
-    #         provider=provider.provider,
-    #         amount=amount,
-    #         status=Transaction.TransactionStatus.WAITING
-    #     )
+        if success:
+            transaction.remote_id = response_data["result"]["transactionId"]
+            transaction.provider = self.provider
+            transaction.save(update_fields=["remote_id", "provider"])
+            response_data["transaction"] = transaction.id
+            response_data["user_card"] = user_card.card_token
+            return success, response_data
 
-    #     payload = {
-    #         "userId": str(user.id),
-    #         "amount": int(amount),
-    #         "account": {
-    #             "order_id": transaction.id
-    #         }
-    #     }
+        error_code = response_data.get("error", {"code": "unknown_error"})["code"]
+        return self.get_error_response(error_code)
 
-    #     success, response_data = self.api_request("CREATE_RECEIPT", payload=payload)
+    def pay_receipt(
+        self, transaction: Transaction, card: UserCard, user_id: int
+    ) -> tuple[bool, dict]:
+        payload = {
+            "transactionId": transaction.remote_id,
+            "cardId": card.card_token,
+            "userId": user_id,
+        }
 
-    #     if success:
-    #         transaction.reference = response_data["result"]["transactionId"]
-    #         transaction.provider = provider.provider
-    #         transaction.save(update_fields=["reference", "provider"])
-    #         response_data["transaction"] = transaction
-    #         response_data["user_card"] = user_card
-    #         return success, response_data
+        success, response_data = self.send_request("PAY_RECEIPT", payload=payload)
 
-    #     error_code = response_data.get("error", {"code": "unknown_error"})["code"]
-    #     return self.get_error_response(error_code)
+        if success:
+            transaction_id = response_data.get("result", {}).get("transactionId")
+            if not transaction_id:
+                return False, {
+                    "error": {
+                        "code": "invalid_response",
+                        "message": "No transactionId in response",
+                    }
+                }
 
-    # def pay_receipt(self, transaction: Transaction, card: UserCard) -> Tuple[bool, Dict]:
-    #     payload = {
-    #         "transactionId": transaction.reference,
-    #         "cardId": card.card_id
-    #     }
+            try:
+                transaction_from_db = Transaction.objects.get(id=transaction.id)
 
-    #     success, response_data = self.api_request("PAY_RECEIPT", payload=payload)
+                with db_transaction.atomic():
+                    transaction_from_db.apply_transaction(
+                        provider=self.provider,
+                        transaction_id=transaction_id,
+                        card=card,
+                    )
 
-    #     if success:
-    #         transaction_id = response_data.get("result", {}).get("transactionId")
-    #         if not transaction_id:
-    #             return False, {"error": {"code": "invalid_response", "message": "No transactionId in response"}}
+                    transaction_from_db.refresh_from_db()
+                    if transaction_from_db.status != TransactionStatus.COMPLETED:
+                        raise ValueError(
+                            f"Transaction status failed to update to SUCCESS, "
+                            f"current status: {transaction_from_db.status}"
+                        )
 
-    #         try:
-    #             transaction_from_db = Transaction.objects.get(id=transaction.id)
+                transaction.refresh_from_db()
 
-    #             with db_transaction.atomic():
-    #                 transaction_from_db.apply_transaction(
-    #                     provider=Providers.ProviderChoices.PAYLOV,
-    #                     transaction_id=transaction_id,
-    #                     card=card
-    #                 )
+                response_data = {
+                    "detail": "Payment is applied successfully",
+                    "code": "payment_success",
+                    "status": 200,
+                }
+                return success, response_data
 
-    #                 transaction_from_db.refresh_from_db()
-    #                 if transaction_from_db.status != Transaction.TransactionStatus.SUCCESS:
-    #                     raise ValueError(f"Transaction status failed to update to SUCCESS, "
-    #                                      f"current status: {transaction_from_db.status}")
+            except Exception as e:
+                return False, {
+                    "error": {"code": "transaction_error", "message": str(e)}
+                }
 
-    #             transaction.refresh_from_db()
-
-    #             response_data = {
-    #                 "detail": "Payment is applied successfully",
-    #                 "code": "payment_success",
-    #                 "status": 200
-    #             }
-    #             return success, response_data
-
-    #         except Exception as e:
-    #             return False, {"error": {"code": "transaction_error", "message": str(e)}}
-
-    #     error_code = response_data.get("error", {"code": "unknown_error"})["code"]
-    #     return self.get_error_response(error_code)
+        error_code = response_data.get("error", {"code": "unknown_error"})["code"]
+        return self.get_error_response(error_code)
 
     """
         Utility methods
