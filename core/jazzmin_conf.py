@@ -4,7 +4,7 @@ JAZZMIN_SETTINGS = {
     "site_logo": "images/bolalaruchun.jpeg",
     "login_logo": "images/bolalaruchun.jpeg",
     "site_logo_classes": "img-circle",
-    "site_icon": "images/apple.jpg",
+    "site_icon": "images/bolalaruchun.jpeg",
     "welcome_sign": "Welcome to the Bolalar Uchun Admin",
     "copyright": "UIC Academy",
     "search_model": ["auth.User", "auth.Group"],
